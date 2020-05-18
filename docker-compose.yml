@@ -1,0 +1,76 @@
+version: '3'
+networks:
+  backend:
+   driver: bridge
+services:
+#BACKEND--CLIENT
+  springboot-client:
+    image: client-docker
+    networks:
+      - backend
+    #network_mode: bridge
+    container_name: clientcontainer
+    expose: 
+      - 8002
+    ports: 
+      - 8002:8002
+    environment: 
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=Abhay
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://springboot-eureka:8761/eureka
+    links: 
+      - postgres
+      - springboot-eureka
+      - springboot-ums
+
+#BACKEND--EUREKA
+  springboot-eureka:
+    image: eureka-docker
+    networks:
+      - backend
+    #network_mode: bridge
+    container_name: eurekacontainer
+        
+    expose: 
+      - 8761
+    ports: 
+      - 8761:8761
+   
+#BACKEND--UMS
+  springboot-ums:
+    image: ums-docker
+    networks:
+      - backend
+    #network_mode: bridge
+    container_name: umscontainer
+    expose: 
+      - 8088
+    ports: 
+      - 8088:8088
+    environment: 
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=Abhay
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://springboot-eureka:8761/eureka
+    links: 
+      - postgres
+      - springboot-eureka
+
+#DATABASE
+  postgres:
+    image: postgres:latest
+    networks:
+      - backend
+    #network_mode: bridge
+    container_name: postgres
+    volumes: 
+     - ./postgres-data:/var/lib/postgresql/data
+    expose: 
+      - 5432
+    ports: 
+      - 5432:5433
+    environment: 
+      - POSTGRES_PASSWORD=Abhay
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
